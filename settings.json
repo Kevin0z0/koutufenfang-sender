@@ -1,0 +1,6 @@
+{
+  "file": "files/sb.txt",
+  "sleep": 0.5,
+  "cycle": true,
+  "random": true
+}
