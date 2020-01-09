@@ -3,6 +3,8 @@ import win32con
 import win32gui
 from json import load
 from time import sleep
+import win32com.client
+from transcoding import *
 import win32clipboard as cp
 
 
@@ -10,12 +12,17 @@ class KTFF:
     def __init__(self, name):
         self.setting = load(open("settings.json","r"))
         self.sleep = self.setting["sleep"]
+        self.name = name
+        self.fg = self.setting["always_foreground"]
         #获取句柄
-        self.handle = win32gui.FindWindow(None,name)
-        if self.handle == 0:
-            print("未发现窗口")
-            exit(0)
-        self.f = [i.decode("utf-8").rstrip("\n") for i in open(self.setting["file"], "rb").readlines()]
+        while 1:
+            self.handle = win32gui.FindWindow(None,self.name)
+            if self.handle == 0:
+                print("[!] 未发现窗口")
+                self.name = input("> 请重新输入窗口的名称: ")
+                continue
+            self.f = trans(self.setting["file"])
+            break
 
     def __copymsg(self,msg):
         '''复制消息至粘贴板'''
@@ -36,8 +43,13 @@ class KTFF:
 
     def __foreground(self):
         '''恢复窗口最小化'''
-        win32gui.SendMessage(self.handle, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
-        win32gui.SetForegroundWindow(self.handle)
+        try:
+            shell = win32com.client.Dispatch("WScript.Shell")
+            shell.SendKeys('%')
+            win32gui.SendMessage(self.handle, win32con.WM_SYSCOMMAND, win32con.SC_RESTORE, 0)
+            win32gui.SetForegroundWindow(self.handle)
+        except:
+            error("[!] 窗口获取失败，请将窗口最小化之后重新尝试")
 
     def __random_data(self):
         a = [i for i in range(len(self.f))]
@@ -53,17 +65,12 @@ class KTFF:
         win32api.keybd_event(17, 0, win32con.KEYEVENTF_KEYUP, 0)
         sleep(0.05)
         win32gui.SendMessage(self.handle, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
-        # win32gui.SendMessage(self.handle, 770, 0, 0)
-        # # 回车发送消息
-        # win32gui.SendMessage(self.handle, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
 
     def analyze(self):
-        if self.__ishide():
-            self.__foreground()
+        self.__foreground()
         self.sequence = self.__random_data()
 
     def run(self):
-        self.__foreground()
         num = 0
         length = len(self.f)
         while 1:
@@ -76,8 +83,7 @@ class KTFF:
                     self.analyze()
                     print("> 已开始重复发送")
                 else:
-                    input("> 已停止发送")
-                    exit(0)
+                    error("> 已停止发送")
             sleep(self.sleep)
 
 
@@ -100,7 +106,8 @@ if __name__ == '__main__':
     '---'                      `----'     `----'     
 
 
+    若没有发送消息请点击消息输入框后运行程序
     """)
-    m = KTFF(input("> 请输入窗口的名称: "))
-    m.analyze()
-    m.run()
+    k = KTFF(input("> 请输入窗口的名称: "))
+    k.analyze()
+    k.run()
