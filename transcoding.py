@@ -11,6 +11,8 @@ def error(e,q=1):
 def trans(path):
     data = open(path, "rb").read()
     coding = judge(data)
+    if coding == "GB2312":
+        coding = "GBK"
     try:
         arr = [i.rstrip() for i in data.decode(coding).split("\n")]
         if len(arr) == 1:
