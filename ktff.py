@@ -13,7 +13,6 @@ class KTFF:
         self.setting = load(open("settings.json","r"))
         self.sleep = self.setting["sleep"]
         self.name = name
-        self.fg = self.setting["always_foreground"]
         #获取句柄
         while 1:
             self.handle = win32gui.FindWindow(None,self.name)
