@@ -4,9 +4,7 @@ def judge(data):
     return chardet.detect(data)["encoding"]
 
 def error(e,q=1):
-    input(e)
-    if q:
-        exit(0)
+    exit(0)
 
 def trans(path):
     data = open(path, "rb").read()
